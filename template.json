@@ -1,0 +1,81 @@
+{
+  "description": "Build CentOS 7 base image for different platform",
+  "min_packer_version": "1.1.0",
+  "variables": {
+    "iso_checksum": "aae20c8052a55cf179af88d9dd35f1a889cd5773",
+    "iso_checksum_type": "sha1",
+    "iso_url": "CentOS-7-x86_64-Minimal-1708.iso",
+    "http_directory": "http",
+    "ssh_username": "vagrant",
+    "ssh_password": "vagrant",
+    "shutdown_command": "echo 'vagrant'|sudo -S shutdown -P now"
+  },
+  "builders": [
+    {
+      "type": "virtualbox-iso",
+      "iso_checksum": "{{user  `iso_checksum`}}",
+      "iso_checksum_type": "{{user  `iso_checksum_type`}}",
+      "iso_url": "{{user  `iso_url`}}",
+      "boot_command": "<tab> text ks=http://{{ .HTTPIP }}:{{ .HTTPPort }}/ks.cfg<enter><wait>",
+      "boot_wait": "10s",
+      "disk_size": 10240,
+      "guest_additions_mode": "upload",
+      "guest_additions_path": "VBoxGuestAdditions_{{.Version}}.iso",
+      "guest_os_type": "RedHat_64",
+      "headless": true,
+      "http_directory": "{{user `http_directory`}}",
+      "shutdown_command": "{{user `shutdown_command`}}",
+      "ssh_username": "{{user `ssh_username`}}",
+      "ssh_password": "{{user `ssh_password`}}",
+      "ssh_wait_timeout": "10000s",
+      "virtualbox_version_file": ".vbox_version",
+      "output_directory": "output/VirtualBox_{{isotime \"20060102\"}}",
+      "vboxmanage": [
+        [ "modifyvm", "{{.Name}}", "--memory", "1024" ],
+        [ "modifyvm", "{{.Name}}", "--cpus", "1" ]
+      ]
+    }
+  ],
+  "provisioners": [
+    {
+      "type": "file",
+      "source": "provisioners/files",
+      "destination": "/tmp/file-provisioner"
+    },
+    {
+      "type": "shell",
+      "execute_command": "{{.Vars}}; echo 'vagrant'| sudo -E -S bash '{{.Path}}'",
+      "scripts": [
+        "provisioners/scripts/base.sh",
+        "provisioners/scripts/vagrant.sh",
+        "provisioners/scripts/limits.sh",
+        "provisioners/scripts/yum-cron.sh",
+        "provisioners/scripts/vim.sh",
+        "provisioners/scripts/chrony.sh",
+        "provisioners/scripts/monitor-tools.sh",
+        "provisioners/scripts/ansible.sh",
+        "provisioners/scripts/git.sh",
+        "provisioners/scripts/fluentd.sh"
+      ]
+    },
+    {
+      "type": "shell",
+      "execute_command": "{{.Vars}}; echo 'vagrant'| sudo -E -S bash '{{.Path}}'",
+      "script": "provisioners/scripts/virtualbox.sh",
+      "only": ["virtualbox-iso"]
+    },
+    {
+      "type": "shell",
+      "execute_command": "{{.Vars}}; echo 'vagrant'| sudo -E -S bash '{{.Path}}'",
+      "script": "provisioners/scripts/cleanup.sh"
+    }
+  ],
+  "post-processors": [
+    {
+      "type": "vagrant",
+      "keep_input_artifact": true,
+      "output": "output/CentOS-7-base-VirtualBox-{{isotime \"20060102\"}}.box",
+      "vagrantfile_template": "post-processors/vagrant/Vagrantfile"
+    }
+  ]
+}
