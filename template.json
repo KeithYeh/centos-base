@@ -34,6 +34,32 @@
         [ "modifyvm", "{{.Name}}", "--memory", "1024" ],
         [ "modifyvm", "{{.Name}}", "--cpus", "1" ]
       ]
+    },
+    {
+      "type": "vmware-iso",
+      "iso_checksum": "{{user  `iso_checksum`}}",
+      "iso_checksum_type": "{{user  `iso_checksum_type`}}",
+      "iso_url": "{{user  `iso_url`}}",
+      "boot_command": "<tab> text ks=http://{{ .HTTPIP }}:{{ .HTTPPort }}/ks.cfg<enter><wait>",
+      "boot_wait": "15s",
+      "disk_size": 10240,
+      "guest_os_type": "centos-64",
+      "headless": false,
+      "http_directory": "{{user `http_directory`}}",
+      "shutdown_command": "{{user `shutdown_command`}}",
+      "ssh_username": "{{user `ssh_username`}}",
+      "ssh_password": "{{user `ssh_password`}}",
+      "ssh_wait_timeout": "10000s",
+      "output_directory": "output/VMware_{{isotime \"20060102\"}}",
+      "tools_upload_flavor": "linux",
+      "vm_name": "centos-base-{{isotime \"20060102\"}}",
+      "vmdk_name": "centos-base",
+      "vmx_data": {
+        "virtualhw.version": "11",
+        "memsize": "1024",
+        "numvcpus": "1",
+        "cpuid.coresPerSocket": "1"
+      }
     }
   ],
   "provisioners": [
@@ -67,6 +93,12 @@
     {
       "type": "shell",
       "execute_command": "{{.Vars}}; echo 'vagrant'| sudo -E -S bash '{{.Path}}'",
+      "script": "provisioners/scripts/vmware.sh",
+      "only": ["vmware-iso"]
+    },
+    {
+      "type": "shell",
+      "execute_command": "{{.Vars}}; echo 'vagrant'| sudo -E -S bash '{{.Path}}'",
       "script": "provisioners/scripts/cleanup.sh"
     }
   ],
@@ -75,7 +107,8 @@
       "type": "vagrant",
       "keep_input_artifact": true,
       "output": "output/CentOS-7-base-VirtualBox-{{isotime \"20060102\"}}.box",
-      "vagrantfile_template": "post-processors/vagrant/Vagrantfile"
+      "vagrantfile_template": "post-processors/vagrant/Vagrantfile",
+      "only": ["virtualbox-iso"]
     }
   ]
 }
