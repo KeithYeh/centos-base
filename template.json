@@ -8,7 +8,9 @@
     "http_directory": "http",
     "ssh_username": "vagrant",
     "ssh_password": "vagrant",
-    "shutdown_command": "echo 'vagrant'|sudo -S shutdown -P now"
+    "shutdown_command": "echo 'vagrant'|sudo -S shutdown -P now",
+    "vagrant_cloud_token": "{{env `VAGRANT_ACCESS_TOKEN`}}",
+    "build_version": "1.0.{{isotime \"20060102\"}}"
   },
   "builders": [
     {
@@ -29,7 +31,7 @@
       "ssh_password": "{{user `ssh_password`}}",
       "ssh_wait_timeout": "10000s",
       "virtualbox_version_file": ".vbox_version",
-      "output_directory": "output/VirtualBox_{{isotime \"20060102\"}}",
+      "output_directory": "output/VirtualBox_{{user `build_version`}}",
       "vboxmanage": [
         [ "modifyvm", "{{.Name}}", "--memory", "1024" ],
         [ "modifyvm", "{{.Name}}", "--cpus", "1" ]
@@ -44,15 +46,15 @@
       "boot_wait": "15s",
       "disk_size": 10240,
       "guest_os_type": "centos-64",
-      "headless": false,
+      "headless": true,
       "http_directory": "{{user `http_directory`}}",
       "shutdown_command": "{{user `shutdown_command`}}",
       "ssh_username": "{{user `ssh_username`}}",
       "ssh_password": "{{user `ssh_password`}}",
       "ssh_wait_timeout": "10000s",
-      "output_directory": "output/VMware_{{isotime \"20060102\"}}",
+      "output_directory": "output/VMware_{{user `build_version`}}",
       "tools_upload_flavor": "linux",
-      "vm_name": "centos-base-{{isotime \"20060102\"}}",
+      "vm_name": "centos-base-{{user `build_version`}}",
       "vmdk_name": "centos-base",
       "vmx_data": {
         "virtualhw.version": "11",
@@ -103,12 +105,19 @@
     }
   ],
   "post-processors": [
-    {
-      "type": "vagrant",
-      "keep_input_artifact": true,
-      "output": "output/CentOS-7-base-VirtualBox-{{isotime \"20060102\"}}.box",
-      "vagrantfile_template": "post-processors/vagrant/Vagrantfile",
-      "only": ["virtualbox-iso"]
-    }
+    [
+      {
+        "type": "vagrant",
+        "keep_input_artifact": true,
+        "output": "output/CentOS-7-base-{{.Provider}}-{{user `build_version`}}.box",
+        "vagrantfile_template": "post-processors/vagrant/Vagrantfile"
+      },
+      {
+        "type": "vagrant-cloud",
+        "box_tag": "KeithYeh/centos-base",
+        "access_token": "{{user `vagrant_cloud_token`}}",
+        "version": "{{user `build_version`}}"
+      }
+    ]
   ]
 }

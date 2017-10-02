@@ -9,6 +9,12 @@ This image is based on CentOS 7.4 Minimal(1708) with following software/packages
 - network utilities
 - monitor utilities
 
+After installed, packer will create a new user `vagrant` with password `vagrant`.
+Vagrant Box will pack with self-generated SSH key pair for user vagrant.
+
+Built vagrant box
+https://app.vagrantup.com/KeithYeh/boxes/centos-base
+
 # Usage
 ## Build images for all builders
 ```bash
