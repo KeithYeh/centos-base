@@ -15,6 +15,14 @@ Vagrant Box will pack with self-generated SSH key pair for user vagrant.
 Built vagrant box
 https://app.vagrantup.com/KeithYeh/boxes/centos-base
 
+Default timezone: UTC
+
+NTP servers:
+- 0.tw.pool.ntp.org
+- 1.tw.pool.ntp.org
+- 2.tw.pool.ntp.org
+- 3.tw.pool.ntp.org
+
 # Usage
 ## Build images for all builders
 ```bash
