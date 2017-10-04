@@ -24,14 +24,22 @@ NTP servers:
 - 3.tw.pool.ntp.org
 
 # Usage
+Before build virtualbox-iso or vmware-iso. Add Vagrant Cloud token to environment variable `VAGRANT_ACCESS_TOKEN`
+
 ## Build images for all builders
 ```bash
-packer build template.json
+packer build -var-file=config/aws.json template.json
 ```
 ## Build images for specific builder
-```
+```bash
+# VirtualBox
 packer build --only=virtualbox-iso template.json
+
+# VMware Desktop
 packer build --only=vmware-iso template.json
+
+# Amazon AMI (EBS backed)
+packer build --only=amazon-ebs -var-file=config/aws.json template.json
 ```
 
 # Reference

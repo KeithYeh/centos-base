@@ -10,7 +10,16 @@
     "ssh_password": "vagrant",
     "shutdown_command": "echo 'vagrant'|sudo -S shutdown -P now",
     "vagrant_cloud_token": "{{env `VAGRANT_ACCESS_TOKEN`}}",
-    "build_version": "1.0.{{isotime \"20060102\"}}"
+    "build_version": "1.0.{{isotime \"20060102\"}}",
+    "aws_access_key": "",
+    "aws_secret_key": "",
+    "aws_region": "",
+    "aws_vpc_id": "",
+    "aws_subnet_id": "",
+    "aws_source_ami": "",
+    "aws_ssh_username": "",
+    "aws_ssh_keypair_name": "",
+    "aws_ssh_private_key_file": ""
   },
   "builders": [
     {
@@ -62,6 +71,21 @@
         "numvcpus": "1",
         "cpuid.coresPerSocket": "1"
       }
+    },
+    {
+      "type": "amazon-ebs",
+      "access_key": "{{user `aws_access_key`}}",
+      "secret_key": "{{user `aws_secret_key`}}",
+      "region": "{{user `aws_region`}}",
+      "vpc_id": "{{user `aws_vpc_id`}}",
+      "subnet_id": "{{user `aws_subnet_id`}}",
+      "source_ami": "{{user `aws_source_ami`}}",
+      "instance_type": "t2.micro",
+      "ssh_username": "{{user `aws_ssh_username`}}",
+      "ssh_keypair_name": "{{user `aws_ssh_keypair_name`}}",
+      "ssh_private_key_file": "{{user `aws_ssh_private_key_file`}}",
+      "associate_public_ip_address": true,
+      "ami_name": "CentOS-7-base-{{user `build_version`}}"
     }
   ],
   "provisioners": [
@@ -74,8 +98,8 @@
       "type": "shell",
       "execute_command": "{{.Vars}}; echo 'vagrant'| sudo -E -S bash '{{.Path}}'",
       "scripts": [
+        "provisioners/scripts/selinux.sh",
         "provisioners/scripts/base.sh",
-        "provisioners/scripts/vagrant.sh",
         "provisioners/scripts/limits.sh",
         "provisioners/scripts/yum-cron.sh",
         "provisioners/scripts/vim.sh",
@@ -84,6 +108,15 @@
         "provisioners/scripts/ansible.sh",
         "provisioners/scripts/git.sh",
         "provisioners/scripts/fluentd.sh"
+      ]
+    },
+    {
+      "type": "shell",
+      "execute_command": "{{.Vars}}; echo 'vagrant'| sudo -E -S bash '{{.Path}}'",
+      "script": "provisioners/scripts/vagrant.sh",
+      "only": [
+        "virtualbox-iso",
+        "vmware-iso"
       ]
     },
     {
@@ -100,6 +133,12 @@
     },
     {
       "type": "shell",
+      "execute_command": "{{.Vars}}; sudo -E bash '{{.Path}}'",
+      "script": "provisioners/scripts/aws-cli.sh",
+      "only": ["amazon-ebs"]
+    },
+    {
+      "type": "shell",
       "execute_command": "{{.Vars}}; echo 'vagrant'| sudo -E -S bash '{{.Path}}'",
       "script": "provisioners/scripts/cleanup.sh"
     }
@@ -110,13 +149,21 @@
         "type": "vagrant",
         "keep_input_artifact": true,
         "output": "output/CentOS-7-base-{{.Provider}}-{{user `build_version`}}.box",
-        "vagrantfile_template": "post-processors/vagrant/Vagrantfile"
+        "vagrantfile_template": "post-processors/vagrant/Vagrantfile",
+        "only": [
+          "virtualbox-iso",
+          "vmware-iso"
+        ]
       },
       {
         "type": "vagrant-cloud",
         "box_tag": "KeithYeh/centos-base",
         "access_token": "{{user `vagrant_cloud_token`}}",
-        "version": "{{user `build_version`}}"
+        "version": "{{user `build_version`}}",
+        "only": [
+          "virtualbox-iso",
+          "vmware-iso"
+        ]
       }
     ]
   ]

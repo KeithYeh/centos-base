@@ -6,3 +6,6 @@ packer_cache
 
 # For built boxes
 *.box
+
+# Private key
+*.pem
