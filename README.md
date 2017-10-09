@@ -28,7 +28,10 @@ Before build virtualbox-iso or vmware-iso. Add Vagrant Cloud token to environmen
 
 ## Build images for all builders
 ```bash
-packer build -var-file=config/aws.json template.json
+packer build \
+    -var-file=config/aws.json \
+    -var-file=config/gcp.json \
+    template.json
 ```
 ## Build images for specific builder
 ```bash
@@ -40,12 +43,20 @@ packer build --only=vmware-iso template.json
 
 # Amazon AMI (EBS backed)
 packer build --only=amazon-ebs -var-file=config/aws.json template.json
+
+# Google compute engine
+packer build --only=googlecompute -var-file=config/gcp.json template.json
 ```
+
+# Gotchas
+- GCE image naming rule is `(?:[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?)`. That is NOT compatible with AMI naming rule.
 
 # Reference
 - [Packer](https://www.packer.io/docs/index.html)
 - [Vagrant](https://www.vagrantup.com/docs/index.html)
 - [RedHat 7 Kickstart syntax reference](https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/7/html/installation_guide/sect-kickstart-syntax)
+- [AWS Official CentOS 7 image](https://aws.amazon.com/marketplace/pp/B00O7WM7QW)
+- [GCP Official CentOS 7 image](https://cloud.google.com/compute/docs/images#os-details)
 
 # LICENSE
 MIT

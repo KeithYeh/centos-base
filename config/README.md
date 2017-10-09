@@ -10,8 +10,23 @@ Because of the sensitivity, real data will never commit into version control. Ju
   "aws_vpc_id": "",
   "aws_subnet_id": "",
   "aws_source_ami": "",
+  "aws_instance_type": "",
   "aws_ssh_username": "",
   "aws_ssh_keypair_name": "",
   "aws_ssh_private_key_file": ""
 }
 ````
+
+### gcp.json
+```json
+{
+  "gcp_account_file": "",
+  "gcp_project_id": "",
+  "gcp_source_image": "",
+  "gcp_zone": "",
+  "gcp_disk_size": "",
+  "gcp_image_family": "",
+  "gcp_machine_type": "",
+  "gcp_ssh_username": ""
+}
+```

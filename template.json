@@ -19,7 +19,15 @@
     "aws_source_ami": "",
     "aws_ssh_username": "",
     "aws_ssh_keypair_name": "",
-    "aws_ssh_private_key_file": ""
+    "aws_ssh_private_key_file": "",
+    "gcp_account_file": "",
+    "gcp_project_id": "",
+    "gcp_source_image": "",
+    "gcp_zone": "",
+    "gcp_disk_size": "",
+    "gcp_image_family": "",
+    "gcp_machine_type": "",
+    "gcp_ssh_username": ""
   },
   "builders": [
     {
@@ -80,12 +88,24 @@
       "vpc_id": "{{user `aws_vpc_id`}}",
       "subnet_id": "{{user `aws_subnet_id`}}",
       "source_ami": "{{user `aws_source_ami`}}",
-      "instance_type": "t2.micro",
+      "instance_type": "{{user `aws_instance_type`}}",
       "ssh_username": "{{user `aws_ssh_username`}}",
       "ssh_keypair_name": "{{user `aws_ssh_keypair_name`}}",
       "ssh_private_key_file": "{{user `aws_ssh_private_key_file`}}",
       "associate_public_ip_address": true,
       "ami_name": "CentOS-7-base-{{user `build_version`}}"
+    },
+    {
+      "type": "googlecompute",
+      "account_file": "{{user `gcp_account_file`}}",
+      "project_id": "{{user `gcp_project_id`}}",
+      "source_image": "{{user `gcp_source_image`}}",
+      "zone": "{{user `gcp_zone`}}",
+      "disk_size": "{{user `gcp_disk_size`}}",
+      "image_family": "{{user `gcp_image_family`}}",
+      "image_name": "centos7-base-v{{isotime \"20060102\"}}",
+      "machine_type": "{{user `gcp_machine_type`}}",
+      "ssh_username": "{{user `gcp_ssh_username`}}"
     }
   ],
   "provisioners": [
@@ -101,14 +121,21 @@
         "provisioners/scripts/selinux.sh",
         "provisioners/scripts/base.sh",
         "provisioners/scripts/limits.sh",
-        "provisioners/scripts/yum-cron.sh",
         "provisioners/scripts/vim.sh",
-        "provisioners/scripts/chrony.sh",
         "provisioners/scripts/monitor-tools.sh",
         "provisioners/scripts/ansible.sh",
         "provisioners/scripts/git.sh",
         "provisioners/scripts/fluentd.sh"
       ]
+    },
+    {
+      "type": "shell",
+      "execute_command": "{{.Vars}}; echo 'vagrant'| sudo -E -S bash '{{.Path}}'",
+      "scripts": [
+        "provisioners/scripts/yum-cron.sh",
+        "provisioners/scripts/chrony.sh"
+      ],
+      "except": ["googlecompute"]
     },
     {
       "type": "shell",
